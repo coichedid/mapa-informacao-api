@@ -8,20 +8,16 @@ let generalFunctions = {
    *  Errors terminate the request, success sets `req[id] = data`.
    */
   load(req, id, callback) {
-    sistemas.getSistema(id, (err,data) => {
-      callback(err, data[0]);
-    })
+    sistemas.getSistema(id)
+      .then( (data) => callback(null, data[0]) )
+      .catch( (reason) => callback(reason) );
   },
 
   /** GET / - List all entities */
   index({ params }, res) {
-    sistemas.getAll((err,data) => {
-      if (err) {
-        console.log(err);
-        return res.status(400).send(err);
-      }
-      return res.json(data);
-    });
+    sistemas.getAll()
+      .then( (data) => res.json(data) )
+      .catch( (reason) => res.status(400).send(reason) );
   },
 
   /** GET /:id - Return a given entity */
@@ -33,13 +29,20 @@ let extraFunctions = {
   users({params},res) {
     let sistema = params.sistema;
     if (sistema && sistema.length > 0) {
-      sistemas.getAllSistemaDbUsers(sistema,(err,data) => {
-        if (err) {
-          console.log(err);
-          return res.status(400).send(err);
-        }
-        return res.json(data);
-      });
+      sistemas.getAllSistemaDbUsers(sistema)
+        .then( (data) => res.json(data) )
+        .catch( (reason) => res.status(400).send(reason) );
+    }
+    else {
+      res.status(400).send({message:'Invalid sistema param'});
+    }
+  },
+  tables({params},res) {
+    let sistema = params.sistema;
+    if (sistema && sistema.length > 0) {
+      sistemas.getTablesReadBySistema(sistema)
+        .then( (data) => res.json(data) )
+        .catch( (reason) => res.status(400).send(reason) );
     }
     else {
       res.status(400).send({message:'Invalid sistema param'});
