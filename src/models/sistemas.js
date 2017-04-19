@@ -88,7 +88,8 @@ class sistemas {
   *
   */
   getSistema(sistema) {
-    let statement = this.config.statements['oneSistema'].replace(/_SISTEMA_/g,sistema),
+    let lwSistema = sistema.toLowerCase();
+    let statement = this.config.statements['oneSistema'].replace(/_SISTEMA_/g,lwSistema),
       args = this.getArguments(statement);
     return this._fetchResults(args);
   }
@@ -101,7 +102,8 @@ class sistemas {
   * return a Promisse of an array of database users internal logins
   */
   getAllSistemaDbUsers(sistema) {
-    let statement = this.config.statements['allSistemaDBUsers'].replace(/_SISTEMA_/g,sistema),
+    let lwSistema = sistema.toLowerCase();
+    let statement = this.config.statements['allSistemaDBUsers'].replace(/_SISTEMA_/g,lwSistema),
       args = this.getArguments(statement);
     return this._fetchResults(args);
   }
@@ -114,9 +116,10 @@ class sistemas {
    * return a Promisse of an array of database users internal logins and respective accessed tables
    */
   getTablesReadBySistema(sistema) {
+    let lwSistema = sistema.toLowerCase();
     let tableStatement = this.config.statements['allTablesReadBySistema'];
     return new Promise( (resolve,reject) => {
-      this.getAllSistemaDbUsers(sistema)
+      this.getAllSistemaDbUsers(lwSistema)
         .then( (userData) => {
           let userCodes = '';
           userData.map( (u) => {
@@ -141,6 +144,7 @@ class sistemas {
           })
             .then( (data) => {
               let reducedData = {};
+              let mainCount = 0;
               data.map( (d) => {
                 if (!reducedData[d.toIdentificador]) {
                   reducedData[d.toIdentificador] = {
@@ -150,8 +154,9 @@ class sistemas {
                 }
                 reducedData[d.toIdentificador].data.push(d);
                 reducedData[d.toIdentificador].count += 1;
+                mainCount += 1;
               } )
-              resolve(reducedData);
+              resolve({results:reducedData, totalTabelas:mainCount});
             } )
             .catch( (reason) => reject(reason) );
         } )
