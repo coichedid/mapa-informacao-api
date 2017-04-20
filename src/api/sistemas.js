@@ -1,6 +1,27 @@
 import resource from 'resource-router-middleware';
 import Sistemas from '../models/sistemas';
 let sistemas = new Sistemas();
+
+function transformTablesJson2CSV(data) {
+  let results = [];
+  results.push(['Usuário', 'Verbo', 'Tabelas']);
+  for (let key in data.results) {
+    let resultItem = {};
+    data.results[key].data.forEach( (item) => {
+      if (!resultItem[item.verb]) resultItem[item.verb] = [];
+      resultItem[item.verb].push(item.fromIdentificador);
+    } );
+    for (let verbKey in resultItem) {
+      let result = [];
+      result.push(key);
+      result.push(verbKey);
+      let fromIdentificadors = '"' + resultItem[verbKey].join(',') + '"';
+      result.push(fromIdentificadors);
+      results.push(result);
+    }
+  }
+  return results.join('\n');
+}
 let generalFunctions = {
   id:'sistema',
 
@@ -37,11 +58,19 @@ let extraFunctions = {
       res.status(400).send({message:'Invalid sistema param'});
     }
   },
-  tables({params},res) {
+  tables({params, query},res) {
+    let format = query.format;
     let sistema = params.sistema;
     if (sistema && sistema.length > 0) {
       sistemas.getTablesReadBySistema(sistema)
-        .then( (data) => res.json(data) )
+        .then( (data) => {
+          let result = data;
+          if (format && 'csv' == format.toLowerCase()) {
+            result = transformTablesJson2CSV(data);
+            res.status(200).send(result);
+          }
+          else res.json(result);
+        } )
         .catch( (reason) => res.status(400).send(reason) );
     }
     else {

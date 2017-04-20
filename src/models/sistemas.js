@@ -55,7 +55,7 @@ class sistemas {
         }
         else {
           if (!data.results || data.results.length != 1 || !data.results[0].data || data.results[0].data.length == 0) {
-            resolve({});
+            resolve([]);
           }
           else {
             let parsedData = this._parseSistemas(data, parseFunction);
@@ -124,42 +124,48 @@ class sistemas {
           let userCodes = '';
           userData.map( (u) => {
             userCodes += (u.id + ',');
-          } );
-          userCodes = userCodes.slice(0,-1);
-          tableStatement = tableStatement.replace(/_CODIGOS_/g,userCodes);
-          console.log(tableStatement);
-          let args = this.getArguments(tableStatement);
-          this._fetchResults(args, (r, parsedResults) => {
-            if (r.rest && r.rest.length == 5) {
-              let rData = {
-                fromId:r.rest[0],
-                fromIdentificador:r.rest[1],
-                verb:r.rest[2],
-                toId:r.rest[3],
-                toIdentificador:r.rest[4]
-              }
-              parsedResults.push(rData);
-            }
-            return parsedResults;
-          })
-            .then( (data) => {
-              let reducedData = {};
-              let mainCount = 0;
-              data.map( (d) => {
-                if (!reducedData[d.toIdentificador]) {
-                  reducedData[d.toIdentificador] = {
-                    data:[],
-                    count:0
-                  };
+          });
+
+          if (userCodes != '') {
+            console.log(userCodes);
+            userCodes = userCodes.slice(0,-1);
+            tableStatement = tableStatement.replace(/_CODIGOS_/g,userCodes);
+            let args = this.getArguments(tableStatement);
+            this._fetchResults(args, (r, parsedResults) => {
+              if (r.rest && r.rest.length == 5) {
+                let rData = {
+                  fromId:r.rest[0],
+                  fromIdentificador:r.rest[1],
+                  verb:r.rest[2],
+                  toId:r.rest[3],
+                  toIdentificador:r.rest[4]
                 }
-                reducedData[d.toIdentificador].data.push(d);
-                reducedData[d.toIdentificador].count += 1;
-                mainCount += 1;
+                parsedResults.push(rData);
+              }
+              return parsedResults;
+            })
+              .then( (data) => {
+                let reducedData = {};
+                let mainCount = 0;
+                data.map( (d) => {
+                  if (!reducedData[d.toIdentificador]) {
+                    reducedData[d.toIdentificador] = {
+                      data:[],
+                      count:0
+                    };
+                  }
+                  reducedData[d.toIdentificador].data.push(d);
+                  reducedData[d.toIdentificador].count += 1;
+                  mainCount += 1;
+                } )
+                resolve({results:reducedData, totalTabelas:mainCount});
               } )
-              resolve({results:reducedData, totalTabelas:mainCount});
-            } )
-            .catch( (reason) => reject(reason) );
-        } )
+              .catch( (reason) => reject(reason) );
+          }
+          else {
+            resolve({results:{}, totalTabelas:0});
+          }
+        })
         .catch( (reason) => reject(reason) );
     });
   }
