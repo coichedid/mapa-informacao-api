@@ -10,7 +10,8 @@ class Tabelas extends ModelBase{
   *
   */
   getTabela(tabela) {
-    let lwTabela = tabela.toLowerCase();
+    let lwTabela = tabela.replace(/ /g,'_').toLowerCase();
+    console.log(lwTabela);
     let statement = this.config.statements['oneTabela'].replace(/_TABELA_/g,lwTabela),
       args = this._getArguments(statement);
     return this._fetchResults(args);
