@@ -9,7 +9,7 @@ function transformTablesJson2CSV(data) {
     let resultItem = {};
     data.results[key].data.forEach( (item) => {
       if (!resultItem[item.verb]) resultItem[item.verb] = [];
-      resultItem[item.verb].push(item.fromIdentificador);
+      resultItem[item.verb].push(item.fromId + '##' + item.fromIdentificador);
     } );
     for (let verbKey in resultItem) {
       let result = [];
