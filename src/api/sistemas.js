@@ -1,5 +1,5 @@
 import resource from 'resource-router-middleware';
-import Sistemas from '../models/sistemas';
+import Sistemas from '../models/Sistemas';
 let sistemas = new Sistemas();
 
 function transformTablesJson2CSV(data) {
@@ -9,7 +9,7 @@ function transformTablesJson2CSV(data) {
     let resultItem = {};
     data.results[key].data.forEach( (item) => {
       if (!resultItem[item.verb]) resultItem[item.verb] = [];
-      resultItem[item.verb].push(item.fromId + '##' + item.fromIdentificador);
+      resultItem[item.verb].push(item.fromIdentificador);
     } );
     for (let verbKey in resultItem) {
       let result = [];
