@@ -127,7 +127,6 @@ class sistemas {
           });
 
           if (userCodes != '') {
-            console.log(userCodes);
             userCodes = userCodes.slice(0,-1);
             tableStatement = tableStatement.replace(/_CODIGOS_/g,userCodes);
             let args = this.getArguments(tableStatement);
