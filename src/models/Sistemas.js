@@ -1,14 +1,22 @@
 // our example model is just an Array
 import ModelBase from './ModelBase';
 class Sistemas extends ModelBase {
-
+  constructor() {
+    super();
+    this.statements = {
+      "allSistemas":"MATCH (v:`Sistema`) RETURN v ORDER BY v. `Identificador` SKIP { s } LIMIT { l }",
+  		"oneSistema":"MATCH (v:`Sistema`) WHERE (lower(v.`Identificador`) CONTAINS '_SISTEMA_' OR lower(v.`Código`) CONTAINS '_SISTEMA_') RETURN v ORDER BY v.`Identificador` SKIP { s } LIMIT { l }",
+  		"allSistemaDBUsers":"MATCH (v:`Login`) WHERE (lower(v.`Identificador`) CONTAINS '_SISTEMA_' OR lower(v.`Código`) CONTAINS '_SISTEMA_') RETURN v ORDER BY v.`Identificador` SKIP { s } LIMIT { l }",
+  		"allTablesReadBySistema":"MATCH (vFrom)-[r]->(vTo) WHERE (id(vFrom) IN [_CODIGOS_] OR id(vTo) IN [_CODIGOS_]) AND type(r) = 'é uma Tabela com leitura pelo Login' RETURN id(vFrom), vFrom.`Identificador`, type(r), id(vTo), vTo.`Identificador` ORDER BY r.type, vFrom.`Identificador`, vTo.`Identificador` SKIP { s } LIMIT { l }"
+    }
+  }
   /**
   *
   * Retrive all Sistema objects from Neo4J repository
   * return a Promise to retrived data
   */
   getAll() {
-    let statement = this.config.statements['allSistemas'],
+    let statement = this.statements['allSistemas'],
       args = this._getArguments(statement);
     return this._fetchResults(args);
   }
@@ -23,7 +31,7 @@ class Sistemas extends ModelBase {
   */
   getSistema(sistema) {
     let lwSistema = sistema.toLowerCase();
-    let statement = this.config.statements['oneSistema'].replace(/_SISTEMA_/g,lwSistema),
+    let statement = this.statements['oneSistema'].replace(/_SISTEMA_/g,lwSistema),
       args = this._getArguments(statement);
     return this._fetchResults(args);
   }
@@ -37,7 +45,7 @@ class Sistemas extends ModelBase {
   */
   getAllSistemaDbUsers(sistema) {
     let lwSistema = sistema.toLowerCase();
-    let statement = this.config.statements['allSistemaDBUsers'].replace(/_SISTEMA_/g,lwSistema),
+    let statement = this.statements['allSistemaDBUsers'].replace(/_SISTEMA_/g,lwSistema),
       args = this._getArguments(statement);
     return this._fetchResults(args);
   }
@@ -51,7 +59,7 @@ class Sistemas extends ModelBase {
    */
   getTablesReadBySistema(sistema) {
     let lwSistema = sistema.toLowerCase();
-    let tableStatement = this.config.statements['allTablesReadBySistema'];
+    let tableStatement = this.statements['allTablesReadBySistema'];
     return new Promise( (resolve,reject) => {
       this.getAllSistemaDbUsers(lwSistema)
         .then( (userData) => {
